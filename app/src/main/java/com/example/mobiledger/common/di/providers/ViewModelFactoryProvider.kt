@@ -47,7 +47,8 @@ class ViewModelFactoryProvider(private val useCaseProvider: UseCaseProvider) :
                     useCaseProvider.provideProfileUseCase(),
                     useCaseProvider.provideTransactionUseCase(),
                     useCaseProvider.provideBudgetUseCase(),
-                    useCaseProvider.provideCategoryUseCase()
+                    useCaseProvider.provideCategoryUseCase(),
+                    useCaseProvider.provideUserSettingsUseCase()
                 ) as T
             }
 
@@ -69,7 +70,8 @@ class ViewModelFactoryProvider(private val useCaseProvider: UseCaseProvider) :
             }
 
             modelClass.isAssignableFrom(SplashViewModel::class.java) -> {
-                SplashViewModel(useCaseProvider.provideUserSettingsUseCase()) as T
+                SplashViewModel(useCaseProvider.provideUserSettingsUseCase(),
+                useCaseProvider.provideConfigUseCase()) as T
             }
 
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {

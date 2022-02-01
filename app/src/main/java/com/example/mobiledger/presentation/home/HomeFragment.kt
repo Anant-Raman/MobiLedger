@@ -2,6 +2,7 @@ package com.example.mobiledger.presentation.home
 
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
@@ -12,7 +13,10 @@ import com.example.mobiledger.R
 import com.example.mobiledger.common.base.BaseFragment
 import com.example.mobiledger.common.extention.setOnSafeClickListener
 import com.example.mobiledger.common.utils.showAddTransactionDialogFragment
+import com.example.mobiledger.common.utils.showAppUpdateDialogFragment
 import com.example.mobiledger.common.utils.showTransactionDetailDialogFragment
+import com.example.mobiledger.common.utils.showUpdateProfilePicDialogFragment
+import com.example.mobiledger.data.sources.cache.SharedPreferenceSource
 import com.example.mobiledger.databinding.FragmentHomeBinding
 import com.example.mobiledger.databinding.SnackViewErrorBinding
 import com.example.mobiledger.domain.entities.TransactionEntity
@@ -43,6 +47,7 @@ class HomeFragment :
         setOnClickListener()
         setUpObservers()
         viewModel.getHomeData(false)
+        viewModel.getHomeData(false)
     }
 
     private fun setUpObservers() {
@@ -71,6 +76,19 @@ class HomeFragment :
                 showSwipeRefresh()
             } else {
                 hideSwipeRefresh()
+            }
+        }
+
+        viewModel.showForceAppUpdateDialog.observe(viewLifecycleOwner){
+            if(it){
+                Log.i("Anant home", it.toString())
+                showAppUpdateDialogFragment(requireActivity().supportFragmentManager,true)
+            }
+        }
+
+        viewModel.showAppUpdateDialog.observe(viewLifecycleOwner){
+            if(it){
+                showAppUpdateDialogFragment(requireActivity().supportFragmentManager,false)
             }
         }
 

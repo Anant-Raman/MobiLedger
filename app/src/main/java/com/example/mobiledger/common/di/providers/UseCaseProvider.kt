@@ -36,5 +36,5 @@ class UseCaseProvider(private val repositoryProvider: RepositoryProvider) {
 
     fun provideAttachmentUseCase(): AttachmentUseCase = AttachmentUseCaseImpl(repositoryProvider.provideAttachmentRepository(), provideProfileUseCase())
 
-
+    fun provideConfigUseCase(): ConfigUseCase = ConfigUseCaseImpl(repositoryProvider.provideConfigRepository())
 }

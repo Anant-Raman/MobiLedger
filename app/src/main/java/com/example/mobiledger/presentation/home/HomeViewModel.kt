@@ -17,10 +17,7 @@ import com.example.mobiledger.domain.entities.MonthlyTransactionSummaryEntity
 import com.example.mobiledger.domain.entities.TransactionEntity
 import com.example.mobiledger.domain.enums.EditCategoryTransactionType
 import com.example.mobiledger.domain.enums.TransactionType
-import com.example.mobiledger.domain.usecases.BudgetUseCase
-import com.example.mobiledger.domain.usecases.CategoryUseCase
-import com.example.mobiledger.domain.usecases.ProfileUseCase
-import com.example.mobiledger.domain.usecases.TransactionUseCase
+import com.example.mobiledger.domain.usecases.*
 import com.example.mobiledger.presentation.Event
 import com.example.mobiledger.presentation.getResultFromJobs
 import com.github.mikephil.charting.data.PieEntry
@@ -35,20 +32,28 @@ class HomeViewModel(
     private val profileUseCase: ProfileUseCase,
     private val transactionUseCase: TransactionUseCase,
     private val budgetUseCase: BudgetUseCase,
-    private val categoryUseCase: CategoryUseCase
+    private val categoryUseCase: CategoryUseCase,
+    private val userSettingsUseCase: UserSettingsUseCase
 ) : BaseViewModel() {
 
     val userNameLiveData: LiveData<String> get() = _userNameLiveData
     private val _userNameLiveData: MutableLiveData<String> = MutableLiveData()
 
     val homeViewItemListLiveData: LiveData<Event<MutableList<HomeViewItem>>> get() = _homeViewItemListLiveData
-    private val _homeViewItemListLiveData: MutableLiveData<Event<MutableList<HomeViewItem>>> = MutableLiveData()
+    private val _homeViewItemListLiveData: MutableLiveData<Event<MutableList<HomeViewItem>>> =
+        MutableLiveData()
 
     val monthNameLiveData: LiveData<String> get() = _monthNameLiveData
     private val _monthNameLiveData: MutableLiveData<String> = MutableLiveData()
 
     private val _isLoading: MutableLiveData<Boolean> = MutableLiveData(false)
     val isLoading: LiveData<Boolean> get() = _isLoading
+
+    private val _showAppUpdateDialog: MutableLiveData<Boolean> = MutableLiveData(false)
+    val showAppUpdateDialog: LiveData<Boolean> get() = _showAppUpdateDialog
+
+    private val _showForceAppUpdateDialog: MutableLiveData<Boolean> = MutableLiveData(false)
+    val showForceAppUpdateDialog: LiveData<Boolean> get() = _showForceAppUpdateDialog
 
     private val _errorLiveData: MutableLiveData<Event<ViewError>> = MutableLiveData()
     val errorLiveData: LiveData<Event<ViewError>> = _errorLiveData
@@ -61,11 +66,25 @@ class HomeViewModel(
 
     lateinit var currentMonth: String
 
+    init {
+        checkUpdate()
+    }
+
     fun getHomeData(isPTR: Boolean) {
         _isLoading.value = true
         getUserName(isPTR)
         getTransactionData(isPTR)
         updateMonthLiveData()
+    }
+
+    private fun checkUpdate() {
+        viewModelScope.launch {
+            if (userSettingsUseCase.isForcedAppUpdateAvailable()) {
+                _showForceAppUpdateDialog.value = true
+            } else if (userSettingsUseCase.isAppUpdateAvailable()) {
+                _showAppUpdateDialog.value = true
+            }
+        }
     }
 
     internal fun getUserName(isPTR: Boolean) {
@@ -97,8 +116,16 @@ class HomeViewModel(
 
     private fun getTransactionData(isPTR: Boolean) {
         viewModelScope.launch {
-            val monthlyData = async { transactionUseCase.getMonthlySummaryEntity(getDateInMMyyyyFormat(getCurrentMonth()), isPTR) }
-            val transactionList = async { transactionUseCase.getTransactionListByMonth(getDateInMMyyyyFormat(getCurrentMonth()), isPTR) }
+            val monthlyData = async {
+                transactionUseCase.getMonthlySummaryEntity(
+                    getDateInMMyyyyFormat(getCurrentMonth()), isPTR
+                )
+            }
+            val transactionList = async {
+                transactionUseCase.getTransactionListByMonth(
+                    getDateInMMyyyyFormat(getCurrentMonth()), isPTR
+                )
+            }
             when (val monthlyResult = monthlyData.await()) {
                 is AppResult.Success -> {
                     val transactionResult = transactionList.await()
@@ -120,13 +147,19 @@ class HomeViewModel(
     }
 
     private suspend fun handleTransactionResult(
-        transactionResult: AppResult<List<TransactionEntity>>, monthlyResult: MonthlyTransactionSummaryEntity
+        transactionResult: AppResult<List<TransactionEntity>>,
+        monthlyResult: MonthlyTransactionSummaryEntity
     ) {
         viewModelScope.launch {
             when (transactionResult) {
                 is AppResult.Success -> {
                     _homeViewItemListLiveData.value =
-                        Event(renderHomeViewList(transactionResult.data.sortedByDescending { it.transactionTime }, monthlyResult))
+                        Event(
+                            renderHomeViewList(
+                                transactionResult.data.sortedByDescending { it.transactionTime },
+                                monthlyResult
+                            )
+                        )
                     _isLoading.value = false
                 }
                 is AppResult.Failure -> {
@@ -166,7 +199,14 @@ class HomeViewModel(
                 homeViewItemList.add(HomeViewItem.MonthlyTotalPie(pieEntryList))
 
             if (transactionList.isNotEmpty()) {
-                homeViewItemList.add(HomeViewItem.HeaderDataRow(HeaderData(R.string.latest_transaction, true)))
+                homeViewItemList.add(
+                    HomeViewItem.HeaderDataRow(
+                        HeaderData(
+                            R.string.latest_transaction,
+                            true
+                        )
+                    )
+                )
                 var newList = transactionList
                 val tempList = newList
                 if (transactionList.size > 10)
@@ -232,7 +272,10 @@ class HomeViewModel(
      * 4-Delete Old category data if it had only 1 transaction
      * 5-Update category amount in old category Budget, if they exist [Only Expense Case]
      */
-    private suspend fun deleteOldTransaction(oldTransactionEntity: TransactionEntity, oldMonthYear: String): AppResult<Unit> {
+    private suspend fun deleteOldTransaction(
+        oldTransactionEntity: TransactionEntity,
+        oldMonthYear: String
+    ): AppResult<Unit> {
         return withContext(Dispatchers.IO) {
             val monthlySummaryUpdateJob =
                 async {
@@ -244,7 +287,12 @@ class HomeViewModel(
                     )
                 }
             val transactionDeleteJob =
-                async { transactionUseCase.deleteTransaction(oldTransactionEntity.id, oldMonthYear) }
+                async {
+                    transactionUseCase.deleteTransaction(
+                        oldTransactionEntity.id,
+                        oldMonthYear
+                    )
+                }
             val categorySummaryAmountUpdateJob =
                 async {
                     categoryUseCase.updateMonthlyCategoryAmount(
@@ -278,7 +326,8 @@ class HomeViewModel(
         _monthNameLiveData.value = currentMonth
     }
 
-    private fun getCurrentMonth(): Calendar = getCurrentDate().apply { add(Calendar.MONTH, monthCount) }
+    private fun getCurrentMonth(): Calendar =
+        getCurrentDate().apply { add(Calendar.MONTH, monthCount) }
 
     fun isCurrentMonth(): Boolean = monthCount == 0
 

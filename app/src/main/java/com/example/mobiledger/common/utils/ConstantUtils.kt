@@ -52,4 +52,6 @@ object ConstantUtils {
     const val BUDGET_TEMPLATES = "BudgetTemplates"
     const val BUDGET_TEMPLATE_CATEGORY_LIST = "BudgetTemplatesCategoryList"
     const val MAX_BUDGET_LIMIT = "maxBudgetLimit"
+    const val CONFIG = "Config"
+    const val APP_UPDATE= "appUpdate"
 }

@@ -2,6 +2,7 @@ package com.example.mobiledger.data.sources.cache
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.example.mobiledger.common.utils.JsonUtils.convertJsonStringToObject
 import com.example.mobiledger.common.utils.JsonUtils.convertToJsonString
 
@@ -19,6 +20,10 @@ interface CacheSource {
     suspend fun acceptTermsAndCondition(isAccepted: Boolean)
     suspend fun setIsFirstTimePermissionAsked(permissions: Array<String>)
     suspend fun isFirstTimePermissionAsked(permissions: Array<String>): Boolean
+    suspend fun setAppUpdateAvailable(isAvailable: Boolean)
+    suspend fun isAppUpdateAvailable(): Boolean
+    suspend fun setForcedAppUpdateAvailable(isAvailable: Boolean)
+    suspend fun isForcedAppUpdateAvailable(): Boolean
 }
 
 class SharedPreferenceSource(val context: Context) : CacheSource {
@@ -31,6 +36,8 @@ class SharedPreferenceSource(val context: Context) : CacheSource {
         private const val REMINDER = "reminder"
         private const val T_AND_C = "tAndC"
         private const val PERMISSIONS_IS_FIRST_TIME = "permission_is_first_time"
+        private const val APP_UPDATE = "appUpdate"
+        private const val FORCED_APP_UPDATE = "forcedAppUpdate"
     }
 
     private val sharedPref: SharedPreferences =
@@ -83,20 +90,41 @@ class SharedPreferenceSource(val context: Context) : CacheSource {
 
     override suspend fun setIsFirstTimePermissionAsked(permissions: Array<String>) {
         val permissionsJson = sharedPref.getString(PERMISSIONS_IS_FIRST_TIME, "")
-        val permissionMap: MutableMap<String, Boolean> = convertJsonStringToObject(permissionsJson) ?: mutableMapOf()
+        val permissionMap: MutableMap<String, Boolean> =
+            convertJsonStringToObject(permissionsJson) ?: mutableMapOf()
         permissions.forEach { permissionMap[it] = false }
-        sharedPref.edit().putString(PERMISSIONS_IS_FIRST_TIME, convertToJsonString(permissionMap)).apply()
+        sharedPref.edit().putString(PERMISSIONS_IS_FIRST_TIME, convertToJsonString(permissionMap))
+            .apply()
     }
 
     override suspend fun isFirstTimePermissionAsked(permissions: Array<String>): Boolean {
         val permissionsJson = sharedPref.getString(PERMISSIONS_IS_FIRST_TIME, "")
-        val permissionMap: MutableMap<String, Boolean> = convertJsonStringToObject(permissionsJson) ?: mutableMapOf()
+        val permissionMap: MutableMap<String, Boolean> =
+            convertJsonStringToObject(permissionsJson) ?: mutableMapOf()
         permissions.forEach {
             if (permissionMap.containsKey(it)) {
                 return false
             }
         }
         return true
+    }
+
+    override suspend fun setAppUpdateAvailable(isAvailable: Boolean) {
+        sharedPref.edit().putBoolean(APP_UPDATE, isAvailable).apply()
+    }
+
+    override suspend fun isAppUpdateAvailable(): Boolean {
+        return sharedPref.getBoolean(APP_UPDATE, false)
+    }
+
+    override suspend fun setForcedAppUpdateAvailable(isAvailable: Boolean) {
+        Log.i("Anant", isAvailable.toString())
+        sharedPref.edit().putBoolean(FORCED_APP_UPDATE, isAvailable).apply()
+    }
+
+    override suspend fun isForcedAppUpdateAvailable(): Boolean {
+        Log.i("Anant", sharedPref.getBoolean(FORCED_APP_UPDATE, false).toString())
+        return sharedPref.getBoolean(FORCED_APP_UPDATE, false)
     }
 
 }

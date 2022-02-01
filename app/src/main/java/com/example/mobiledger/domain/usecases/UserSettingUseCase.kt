@@ -16,6 +16,10 @@ interface UserSettingsUseCase {
     suspend fun acceptTermsAndCondition(isAccepted: Boolean)
     suspend fun setIsFirstTimePermissionAsked(permissions: Array<String>)
     suspend fun isFirstTimePermissionAsked(permissions: Array<String>): Boolean
+    suspend fun setAppUpdateAvailable(isAvailable: Boolean)
+    suspend fun isAppUpdateAvailable(): Boolean
+    suspend fun setForcedAppUpdateAvailable(isAvailable: Boolean)
+    suspend fun isForcedAppUpdateAvailable(): Boolean
 }
 
 class UserSettingsUseCaseImpl(
@@ -54,4 +58,12 @@ class UserSettingsUseCaseImpl(
     override suspend fun isFirstTimePermissionAsked(permissions: Array<String>): Boolean {
         return userSettingsRepository.isFirstTimePermissionAsked(permissions)
     }
+
+    override suspend fun setAppUpdateAvailable(isAvailable: Boolean) =  userSettingsRepository.setAppUpdateAvailable(isAvailable)
+
+    override suspend fun isAppUpdateAvailable(): Boolean = userSettingsRepository.isAppUpdateAvailable()
+
+    override suspend fun setForcedAppUpdateAvailable(isAvailable: Boolean) =  userSettingsRepository.setForcedAppUpdateAvailable(isAvailable)
+
+    override suspend fun isForcedAppUpdateAvailable(): Boolean = userSettingsRepository.isForcedAppUpdateAvailable()
 }

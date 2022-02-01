@@ -235,8 +235,12 @@
     <string name="category_budget_empty_msg">Please Add Category wise Budget by clicking below. \n\nYou can also create a new budget template from profile section for future references</string>
     <string name="get_started_with_google">Get started with Google</string>
     <string name="total_budget_set">Total Budget set: %1$s / %2$s (%3$s)</string>
-
     <string name="transaction">Transactions - %1$s</string>
 
+    <!-- APP UPDATE DIALOG -->
+
+    <string name="app_update_dialog">App Update Available</string>
+    <string name="app_update_dialog_message">Do you want to update the app?</string>
+    <string name="not_now">Not now</string>
 
 </resources>

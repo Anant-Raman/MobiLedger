@@ -78,6 +78,11 @@ class RepositoryProvider(
             cacheSourceProvider.provideCacheSource())
     }
 
+    private val configRepository: ConfigRepository by lazy {
+        ConfigRepositoryImpl(
+            apiSourceProvider.provideConfigApiSource())
+    }
+
     /*-------------------------------Public -----------------------------*/
 
     fun provideInternetRepository(): InternetRepository = internetRepository
@@ -99,5 +104,7 @@ class RepositoryProvider(
     fun provideBudgetTemplateRepository(): BudgetTemplateRepository = budgetTemplateRepository
 
     fun provideAttachmentRepository(): AttachmentRepository = attachmentRepository
+
+    fun provideConfigRepository(): ConfigRepository = configRepository
 
 }

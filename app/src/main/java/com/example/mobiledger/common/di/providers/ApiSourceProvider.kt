@@ -27,4 +27,7 @@ class ApiSourceProvider(
 
     fun provideBudgetTemplateApiSource(): BudgetTemplateApi =
         BudgetTemplateApiImpl(firebaseProvider.provideFirebaseDatabase(), authSourceProvider.provideAuthSource())
+
+    fun provideConfigApiSource(): ConfigApi =
+        ConfigApiImpl(firebaseProvider.provideFirebaseDatabase())
 }

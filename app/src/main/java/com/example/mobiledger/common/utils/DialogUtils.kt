@@ -14,6 +14,7 @@ import com.example.mobiledger.presentation.budget.updatebudget.UpdateBudgetDialo
 import com.example.mobiledger.presentation.budgetTemplate.AddBudgetTemplateDialogFragment
 import com.example.mobiledger.presentation.budgetTemplate.EditBudgetTemplateDialogFragment
 import com.example.mobiledger.presentation.categoryFragment.AddCategoryDialogFragment
+import com.example.mobiledger.presentation.home.AppUpdateDialogFragment
 import com.example.mobiledger.presentation.onBoarding.TermsAndConditionFragment
 import com.example.mobiledger.presentation.profile.profilePicUpdateDialog.ProfilePicUpdateDialogFragment
 import com.example.mobiledger.presentation.transactiondetail.TransactionDetailDialogFragment
@@ -152,6 +153,17 @@ fun showUpdateProfilePicDialogFragment(
     fragmentManager: FragmentManager,
 ) {
     val dialog = ProfilePicUpdateDialogFragment.newInstance()
+    dialog.show(
+        fragmentManager,
+        dialog.getName()
+    )
+}
+
+fun showAppUpdateDialogFragment(
+    fragmentManager: FragmentManager,
+    isForceUpdate: Boolean
+) {
+    val dialog = AppUpdateDialogFragment.newInstance(isForceUpdate)
     dialog.show(
         fragmentManager,
         dialog.getName()

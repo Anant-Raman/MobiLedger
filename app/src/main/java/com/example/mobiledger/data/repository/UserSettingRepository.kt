@@ -16,6 +16,10 @@ interface UserSettingsRepository {
     suspend fun acceptTermsAndCondition(isAccepted: Boolean)
     suspend fun setIsFirstTimePermissionAsked(permissions: Array<String>)
     suspend fun isFirstTimePermissionAsked(permissions: Array<String>): Boolean
+    suspend fun setAppUpdateAvailable(isAvailable: Boolean)
+    suspend fun isAppUpdateAvailable(): Boolean
+    suspend fun setForcedAppUpdateAvailable(isAvailable: Boolean)
+    suspend fun isForcedAppUpdateAvailable(): Boolean
 }
 
 class UserSettingsRepositoryImpl(private val cacheSource: CacheSource) : UserSettingsRepository {
@@ -70,5 +74,21 @@ class UserSettingsRepositoryImpl(private val cacheSource: CacheSource) : UserSet
 
     override suspend fun isFirstTimePermissionAsked(permissions: Array<String>): Boolean {
         return cacheSource.isFirstTimePermissionAsked(permissions)
+    }
+
+    override suspend fun setAppUpdateAvailable(isAvailable: Boolean) {
+        cacheSource.setAppUpdateAvailable(isAvailable)
+    }
+
+    override suspend fun isAppUpdateAvailable(): Boolean {
+        return cacheSource.isAppUpdateAvailable()
+    }
+
+    override suspend fun setForcedAppUpdateAvailable(isAvailable: Boolean) {
+        cacheSource.setForcedAppUpdateAvailable(isAvailable)
+    }
+
+    override suspend fun isForcedAppUpdateAvailable(): Boolean {
+        return cacheSource.isForcedAppUpdateAvailable()
     }
 }
